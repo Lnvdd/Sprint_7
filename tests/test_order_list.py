@@ -1,5 +1,5 @@
 import allure
-from helpers import OrderAPI
+from api.order_api import OrderAPI
 
 
 @allure.feature('Список заказов')
@@ -22,29 +22,30 @@ class TestOrderList:
             body = response.json()
             assert "orders" in body
             assert isinstance(body["orders"], list)
-            allure.attach(str(body), name="Orders List", attachment_type=allure.attachment_type.JSON)
+            allure.attach(str(body), name="Response", attachment_type=allure.attachment_type.JSON)
 
     @allure.title('Список заказов не пустой')
-    @allure.description('Проверка, что возвращается непустой список заказов')
+    @allure.description('Проверка, что возвращается непустой список')
     @allure.severity("normal")
     def test_orders_list_not_empty(self):
         order_api = OrderAPI()
         response = order_api.get_orders()
         assert response.status_code == 200
         body = response.json()
-        assert len(body["orders"]) > 0, "Список заказов должен быть непустым"
+        assert len(body["orders"]) > 0
 
     @allure.title('Каждый заказ содержит обязательные поля')
-    @allure.description('Проверка структуры данных каждого заказа в списке')
+    @allure.description('Проверка структуры данных заказа')
     @allure.severity("normal")
     def test_order_structure(self):
         order_api = OrderAPI()
         response = order_api.get_orders()
         assert response.status_code == 200
+        
         orders = response.json()["orders"]
         if orders:
             first = orders[0]
             expected = ["id", "firstName", "lastName", "address", "phone"]
             missing = [f for f in expected if f not in first]
-            assert not missing, f"Отсутствуют поля: {missing}"
-            allure.attach(str(first), name="First Order", attachment_type=allure.attachment_type.JSON)
+            assert not missing
+            allure.attach(str(first), name="Order", attachment_type=allure.attachment_type.JSON)
